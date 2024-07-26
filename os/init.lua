@@ -44,22 +44,6 @@ for _, file in pairs(sorted) do
     loadfile("/boot/" .. file)
 end
 
-clear()
-print("weird padding or else it wont work...")
-
-local proc1 = process.create("test",function()
-    local event = require("event")
-    event.listen("touch", function(_, _, _, _)
-        print("testi")
-    end)
-
-    print("Added listener!")
-end)
-
-local proc2 = process.create("test2", function()
-    print("scary")
-    print("scary scary!")
-end)
 
 process.launch()
 

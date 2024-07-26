@@ -83,7 +83,7 @@ function t.table.from_iterator(it)
 	local tab = {}
 	for value in it
 	do
-		table.insert(tab,it)
+		table.insert(tab,value)
 	end
 	return tab
 end

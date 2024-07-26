@@ -1,6 +1,6 @@
 local listeners = {}
 
-eventproc = process.create("events", function()
+local eventproc = process.create("events", function()
     while true do
         local ev = table.pack(computer.pullSignal(0))
         -- print(ev[1])
