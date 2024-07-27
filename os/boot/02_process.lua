@@ -16,6 +16,11 @@ function process.create(name, func)
         end
     end
 
+    function proc.kill(self)
+        process.procs[self.pid] = nil
+        coroutine.close(self.co)
+    end
+
     process.procs[#process.procs+1] = proc
     return proc
 end
@@ -33,7 +38,7 @@ function process.launch()
                 process.procs[pid] = nil
                 -- print("Closed:  " .. tostring(pid))
             elseif status == false then
-                error(err, 2)
+                error(err)
             end
         end
 

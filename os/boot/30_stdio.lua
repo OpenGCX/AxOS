@@ -1,12 +1,12 @@
 local buffer = require("buffer")
 local bstdlib = require("bstdlib")
 local event = require("event")
+local cursor = require("cursor")
 
 local gpu = component.proxy(component.list("gpu")())
 local w, h = gpu.getResolution()
 
-local lastx = 1
-local lasty = 1
+local globalCursor = cursor.create(1,1)
 
 stdout = buffer.createBuffer()
 stdin  = buffer.createBuffer()
@@ -29,13 +29,14 @@ stdin  = buffer.createBuffer()
 --     return out
 -- end
 
+stdout.cursor = globalCursor
 
 local function newline()
-    lastx = 1
-    lasty = lasty + 1
-    if lasty > h then
+    stdout.cursor.x = 1
+    stdout.cursor.y = stdout.cursor.y + 1
+    if stdout.cursor.y > h then
         gpu.copy(1,1,w,h,0,-1)
-        lasty = lasty - 1
+        stdout.cursor.y = stdout.cursor.y - 1
     end
 end
 
@@ -50,14 +51,24 @@ local stdioproc = process.create("stdio",function()
             if lc>1 then newline() end
 
             local line = lines[lc]
-            while #line+lastx > w do
-                gpu.set(lastx, lasty, line:sub(1,w-lastx))
-                line = line:sub(w-lastx+1)
+        
+            if line == "\8" then
+                gpu.setBackground(0)
+                gpu.set(stdout.cursor.x-1, stdout.cursor.y, " ")
+                stdout.cursor.x = stdout.cursor.x - 1
+                goto skip
+            end
+
+            while #line+stdout.cursor.x > w do
+                gpu.setBackground(0)
+                gpu.set(stdout.cursor.x, stdout.cursor.y, line:sub(1,w-stdout.cursor.x))
+                line = line:sub(w-stdout.cursor.x+1)
                 newline()
             end
 
-            gpu.set(lastx, lasty, line)
-            lastx = lastx + #line
+            gpu.setBackground(0)
+            gpu.set(stdout.cursor.x, stdout.cursor.y, line)
+            stdout.cursor.x = stdout.cursor.x + #line
 
             if funny:sub(#funny) == "\n" then newline() end
         end
@@ -68,21 +79,20 @@ local stdioproc = process.create("stdio",function()
 end)
 
 function clear()
+    gpu.setBackground(0)
     gpu.fill(1,1,w,h," ")
     stdout:flush()
-    lastx = 1
-    lasty = 1
+    stdout.cursor.x = 1
+    stdout.cursor.y = 1
 end
 
 function print(data)
     stdout:write(tostring(data) .. "\n")
 end
 
-function stdout.backspace(stdout)
-    gpu.set(lastx-1, lasty," ")
-    lastx = lastx - 1
+function stdout.resetCursor(stdout)
+    stdout.cursor = globalCursor
 end
-
 
 -- stdin
 event.listen("key_down", function(_, char, code, _)

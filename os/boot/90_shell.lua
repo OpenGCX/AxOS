@@ -9,7 +9,7 @@ local function getCommand()
         if data == "\8" then
             if #command > 0 then
                 command = command:sub(-#command, #command-1)
-                stdout:backspace()
+                stdout:write("\8")
             end
         elseif data == "\13" then
             stdout:write("\n")
@@ -27,6 +27,7 @@ end
 process.create("shell", function()
     clear()
     print("Booted into AxOS")
+    stdout.cursor:enableBlink()
 
     while true do
         local command = getCommand()
