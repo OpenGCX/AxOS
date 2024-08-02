@@ -13,6 +13,7 @@ local function getCommand()
             end
         elseif data == "\13" then
             stdout:write("\n")
+            component.proxy(component.list("gpu")()).set(1,16,tostring(stdout.data))
             break
         else
             command = command .. keyboard.render(data)

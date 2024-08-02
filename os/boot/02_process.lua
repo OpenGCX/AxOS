@@ -38,7 +38,7 @@ function process.launch()
                 process.procs[pid] = nil
                 -- print("Closed:  " .. tostring(pid))
             elseif status == false then
-                error(err)
+                error(err, 1)
             end
         end
 
