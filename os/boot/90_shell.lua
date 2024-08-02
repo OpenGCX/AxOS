@@ -1,8 +1,10 @@
 local keyboard = require("keyboard")
+local fs = component.proxy(component.list("filesystem")())
 
 local function getCommand()
     stdin:flush()
     stdout:write(">")
+    stdout.cursor:enableBlink()
     local command = ""
     while true do
         local data = stdin:read()
@@ -13,7 +15,7 @@ local function getCommand()
             end
         elseif data == "\13" then
             stdout:write("\n")
-            component.proxy(component.list("gpu")()).set(1,16,tostring(stdout.data))
+            stdout.cursor:disableBlink()
             break
         else
             command = command .. keyboard.render(data)
@@ -25,19 +27,38 @@ local function getCommand()
     return command
 end
 
+local function runCommand(cmd)
+    local func, err = load(readfile("/bin/"..cmd..".lua"))
+    if not func then
+        print("ERROR LOADING\n" .. err)
+        return
+    end
+
+    local status, err = pcall(func)
+    
+    if not status then
+        print("RUNTIME ERROR\n" .. err)
+        return
+    end
+end
+
 process.create("shell", function()
     clear()
     print("Booted into AxOS")
-    stdout.cursor:enableBlink()
+    print("something is suspcious")
 
     while true do
         local command = getCommand()
         if command == "" then goto skip_main end
-        if command == "test" then
-            print("goodjob, you ran the test command")
+
+        local fs = component.proxy(computer.getBootAddress())
+        
+        if fs.exists("/bin/"..command..".lua") then
+            runCommand(command)
         else
-            print("tf are you talking about bro")
+            print("This executable does not exist!")
         end
+
         ::skip_main::
     end
 end)
