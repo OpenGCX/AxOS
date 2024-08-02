@@ -1,5 +1,5 @@
 local keyboard = require("keyboard")
-local fs = component.proxy(component.list("filesystem")())
+local fs = component.proxy(computer.getBootAddress())
 
 local function getCommand()
     stdin:flush()
@@ -50,8 +50,6 @@ process.create("shell", function()
     while true do
         local command = getCommand()
         if command == "" then goto skip_main end
-
-        local fs = component.proxy(computer.getBootAddress())
         
         if fs.exists("/bin/"..command..".lua") then
             runCommand(command)

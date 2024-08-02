@@ -47,9 +47,9 @@ local stdioproc = process.create("stdio",function()
         local funny = stdout:read()
         local lines = bstdlib.string.split(funny, "\n")
         if funny == "" then goto skip end
+        if funny:sub(1,1) == "\n" then newline() end
 
         for lc=1,#lines,1 do
-            if funny:sub(1,1) == "\n" then newline() end
             if lc>1 then newline() end
 
             local line = lines[lc]
