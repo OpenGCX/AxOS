@@ -11,15 +11,15 @@ function lib.create(x, y)
     cursor._interruptblink = false
     cursor._blinkproc = ""
 
-    event.listen("key_down", function(_, _, _, _)
-        cursor._interruptblink = true
-    end)
+    -- event.listen("key_down", function(_, _, _, _)
+    --     cursor._interruptblink = true
+    -- end)
 
-    event.listen("key_up", function(_, _, _, _)
-        cursor._interruptblink = false
-        -- component.proxy(component.list("gpu")()).set(1,9,"unstuck")
-        -- computer.beep(500)
-    end)
+    -- event.listen("key_up", function(_, _, _, _)
+    --     cursor._interruptblink = false
+    --     -- component.proxy(component.list("gpu")()).set(1,9,"unstuck")
+    --     -- computer.beep(500)
+    -- end)
 
     function cursor.enableBlink(self)
         if self.blinking == true then return false end

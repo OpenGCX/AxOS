@@ -32,6 +32,8 @@ stdin  = buffer.createBuffer()
 stdout.cursor = globalCursor
 
 local function newline()
+    gpu.setBackground(0)
+    gpu.fill(stdout.cursor.x, stdout.cursor.y, w, 1, " ")
     stdout.cursor.x = 1
     stdout.cursor.y = stdout.cursor.y + 1
     if stdout.cursor.y > h then
@@ -54,7 +56,7 @@ local stdioproc = process.create("stdio",function()
         
             if line == "\8" then
                 gpu.setBackground(0)
-                gpu.set(stdout.cursor.x-1, stdout.cursor.y, " ")
+                gpu.fill(stdout.cursor.x-1, stdout.cursor.y, w, 1, " ")
                 stdout.cursor.x = stdout.cursor.x - 1
                 goto skip
             end
