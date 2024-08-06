@@ -1,4 +1,5 @@
 local bstdlib = require("bstdlib")
+local process = require("process")
 local event = require("event")
 local tty = require("tty")
 

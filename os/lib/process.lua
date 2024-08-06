@@ -1,4 +1,4 @@
-process = {}
+local process = {}
 
 process.procs = {}
 
@@ -45,3 +45,5 @@ function process.launch()
         pid = pid + 1
     end
 end
+
+return process

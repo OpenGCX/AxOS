@@ -1,4 +1,5 @@
 local keyboard = require("keyboard")
+local process = require("process")
 local tty = require("tty")
 local fs = component.proxy(computer.getBootAddress())
 

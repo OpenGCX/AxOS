@@ -45,7 +45,7 @@ for _, file in pairs(sorted) do
 end
 
 
-process.launch()
+require("process").launch()
 
 hang()
 
