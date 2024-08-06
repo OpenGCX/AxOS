@@ -2,6 +2,7 @@ local buffer = require("buffer")
 local bstdlib = require("bstdlib")
 local event = require("event")
 local cursor = require("cursor")
+local tty = require("tty")
 
 local gpu = component.proxy(component.list("gpu")())
 local w, h = gpu.getResolution()
@@ -12,22 +13,6 @@ stdout = buffer.createBuffer()
 stdin  = buffer.createBuffer()
 
 -- stdout
--- local function wrap(text, len)
---     local out = {}
---     local _text = text -- mfw lua
---     while true do
---         out[#out+1] = _text:sub(1, len)
---         _text = _text:sub(len+1)
-
---         if #_text <= len then
---             break
---         end
---     end
-
---     out[#out+1] = _text
-
---     return out
--- end
 
 stdout.cursor = globalCursor
 
@@ -42,42 +27,35 @@ local function newline()
     end
 end
 
-local stdioproc = process.create("stdio",function()
+local function backspace()
+    gpu.setBackground(0)
+    gpu.fill(stdout.cursor.x-1, stdout.cursor.y, w, 1, " ")
+    stdout.cursor.x = stdout.cursor.x - 1
+end
+
+local functable = {
+    ["\n"]=newline,
+    ["\b"]=backspace
+}
+
+local stdoutproc = process.create("stdoutrender", function()
     while true do
-        local funny = stdout:read()
-        local lines = bstdlib.string.split(funny, "\n")
-        if funny == "" then goto skip end
-        if funny:sub(1,1) == "\n" then newline() end
+        local parsed = tty.parse(functable)
+        if parsed == {""} then goto skip end
 
-        for lc=1,#lines,1 do
-            if lc>1 then newline() end
-
-            local line = lines[lc]
-        
-            if line == "\8" then
+        for i, data in ipairs(parsed) do
+            if type(data) == "string" then
                 gpu.setBackground(0)
-                gpu.fill(stdout.cursor.x-1, stdout.cursor.y, w, 1, " ")
-                stdout.cursor.x = stdout.cursor.x - 1
-                goto skip
+                gpu.set(stdout.cursor.x, stdout.cursor.y, data)
+                stdout.cursor.x = stdout.cursor.x + #data
+            else
+                -- unsafe but who cares lol
+                data()
             end
-
-            while #line+stdout.cursor.x > w do
-                gpu.setBackground(0)
-                gpu.set(stdout.cursor.x, stdout.cursor.y, line:sub(1,w-stdout.cursor.x))
-                line = line:sub(w-stdout.cursor.x+1)
-                newline()
-            end
-
-            gpu.setBackground(0)
-            gpu.set(stdout.cursor.x, stdout.cursor.y, line)
-            stdout.cursor.x = stdout.cursor.x + #line
-
-            if funny:sub(#funny) == "\n" then newline() end
         end
         ::skip::
         coroutine.yield()
-
-    end
+    end 
 end)
 
 function clear()
