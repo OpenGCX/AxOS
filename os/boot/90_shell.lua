@@ -1,25 +1,26 @@
 local keyboard = require("keyboard")
+local tty = require("tty")
 local fs = component.proxy(computer.getBootAddress())
 
 local function getCommand()
-    stdin:flush()
-    stdout:write(">")
-    stdout.cursor:enableBlink()
+    tty.stdin:flush()
+    tty.stdout:write(">")
+    tty.stdout.cursor:enableBlink()
     local command = ""
     while true do
-        local data = stdin:read()
+        local data = tty.stdin:read()
         if data == "\8" then
             if #command > 0 then
                 command = command:sub(-#command, #command-1)
-                stdout:write("\8")
+                tty.stdout:write("\8")
             end
         elseif data == "\13" then
-            stdout:write("\n")
-            stdout.cursor:disableBlink()
+            tty.stdout:write("\n")
+            tty.stdout.cursor:disableBlink()
             break
         else
             command = command .. keyboard.render(data)
-            stdout:write(keyboard.render(data))
+            tty.stdout:write(keyboard.render(data))
         end
         coroutine.yield()
     end

@@ -1,21 +1,25 @@
+local pkgcache = {}
+
 function require(lib)
-    local fs = component.proxy(computer.getBootAddress())
-    -- local fh = fs.open("/lib/"..lib..".lua")
+    if not pkgcache[lib] then
+        local fs = component.proxy(computer.getBootAddress())
+        local func, err = load(readfile("/lib/"..lib..".lua"))
 
-    -- local code = fs.read(fh, 5000000000000000000000000000000000000)
-    local func, err = load(readfile("/lib/"..lib..".lua"))
+        if not func then
+            error("LOAD ERROR\n"..err)
+        end
 
-    if not func then
-        error("LOAD ERROR\n"..err)
+        local status, package = pcall(func)
+        
+        if not status then
+            error("RUNTIME ERROR\n"..package,2)
+        end
+
+        fs.close(fh)
+        pkgcache[lib] = package
+        return package
+    else
+        local package = pkgcache[lib]
+        return package
     end
-
-    local status, package = pcall(func)
-    
-    if not status then
-        error("RUNTIME ERROR\n"..package,2)
-    end
-
-    fs.close(fh)
-
-    return package
 end
